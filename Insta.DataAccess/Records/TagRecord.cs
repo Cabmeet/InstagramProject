@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿
 
 namespace Insta.DataAccess.Records
 {
@@ -10,12 +8,12 @@ namespace Insta.DataAccess.Records
     public sealed class TagRecord
     {
         
-        [Key,ForeignKey("Post")]
+        [ForeignKey("Post")]
         public int PostId { get; set; }
         public PostRecord Post { get; set; }
 
        
-         [Key,ForeignKey("UniqueTag")]
+         [ForeignKey("UniqueTag")]
         public int UniqueTagId { get; set; }
         public UniqueTagRecord UniqueTag { get; set; }
 
