@@ -9,12 +9,11 @@ namespace Insta.DataAccess.Records
 
     public sealed class DescriptionRecord
     {
-        
         [Key, ForeignKey("Description")]
         public int DescriptionId { get; set; }
         public DescriptionRecord Description { get; set; }
 
-        [ForeignKey("Post")]
+        [Key,ForeignKey("Post")]
         public int PostId { get; set; }
         public PostRecord Post { get; set; }
 

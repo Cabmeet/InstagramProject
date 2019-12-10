@@ -10,7 +10,8 @@ namespace Insta.DataAccess.Records
     using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
     public sealed class PostRecord
-    { 
+    {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int PostId { get; set; }
 
@@ -20,6 +21,8 @@ namespace Insta.DataAccess.Records
 
         public string Geolocation { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+
+        public DescriptionRecord Description { get; set; }
 
         public List<CommentRecord> Comments { get; set; }
 

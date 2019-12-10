@@ -10,12 +10,12 @@ namespace Insta.DataAccess.Records
     public sealed class TagRecord
     {
         
-        [Key, ForeignKey("Post")]
+        [Key,ForeignKey("Post")]
         public int PostId { get; set; }
         public PostRecord Post { get; set; }
 
        
-        [Key, ForeignKey("UniqueTag")]
+         [Key,ForeignKey("UniqueTag")]
         public int UniqueTagId { get; set; }
         public UniqueTagRecord UniqueTag { get; set; }
 

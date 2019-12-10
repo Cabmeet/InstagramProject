@@ -27,7 +27,9 @@ namespace Insta.DataAccess.Records
 
         [ForeignKey("ParentComment")]
         public int? ParentCommentId { get; set; }
+        public CommentRecord ParentComment { get; set; }
 
+        [Required]
         public string Text { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
 

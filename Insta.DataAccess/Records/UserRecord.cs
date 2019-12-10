@@ -16,6 +16,8 @@
 
         public bool IsEmailConfirmed { get; set; }
 
+        public ProfileRecord Profile { get; set; }
+
         [Required]
         public string EncryptedPassword { get; set; }
 

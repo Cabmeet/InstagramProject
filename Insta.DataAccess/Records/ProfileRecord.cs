@@ -25,5 +25,8 @@ namespace Insta.DataAccess.Records
         public int Age { get; set; }
         public string Description { get; set; }
         public bool IsVisible { get; set; }
+
+        public List<SubscriptionRecord> Subscribers { get; set; }
+
     }
 }

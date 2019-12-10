@@ -12,16 +12,16 @@ namespace Insta.DataAccess.Records
    public sealed class SubscriptionRecord
     {
        
-        [Key, ForeignKey("SubscriberUser")]
+        [Key,ForeignKey("SubscriberUser")]
         public int SubscriberUserId { get; set; }
         public SubscriptionRecord SubscriberUser { get; set; }
 
-        [Key, ForeignKey("SubscribedToUser")]
+        [Key,ForeignKey("SubscribedToUser")]
         public int SubscribedToUserId { get; set; }
         public SubscriptionRecord SubscribedToUser { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
 
-        public List<UserRecord> Users { get; set; }
+       
 
     }
 }
