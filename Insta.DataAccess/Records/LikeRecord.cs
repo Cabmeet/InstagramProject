@@ -4,6 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("Likes")]
     public sealed class LikeRecord
     {
         public DateTimeOffset CreatedAt { get; set; }

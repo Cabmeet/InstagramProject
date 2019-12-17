@@ -5,6 +5,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("Comments")]
     public sealed class CommentRecord
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

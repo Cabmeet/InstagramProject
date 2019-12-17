@@ -3,6 +3,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("Profiles")]
     public sealed class ProfileRecord
     {
         public int Age { get; set; }

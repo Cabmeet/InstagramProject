@@ -5,6 +5,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("Users")]
     public sealed class UserRecord
     {
         public List<CommentRecord> Comments { get; set; }

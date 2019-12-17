@@ -5,6 +5,7 @@ namespace Insta.DataAccess.Records
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("Tags")]
     public sealed class TagRecord
     {
         

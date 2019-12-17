@@ -3,6 +3,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table( ("Descriptions"))]
     public sealed class DescriptionRecord
     {
         public PostRecord Post { get; set; }

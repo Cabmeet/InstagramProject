@@ -4,6 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("Subscriptions")]
     public sealed class SubscriptionRecord
     {
         public DateTimeOffset CreatedAt { get; set; }

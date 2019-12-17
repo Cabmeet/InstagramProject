@@ -4,6 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    [Table("UniqueTags")]
     public sealed class UniqueTagRecord
     {
         public List<TagRecord> Tags { get; set; }
