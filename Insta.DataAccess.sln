@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insta.DataAccess", "Insta.DataAccess\Insta.DataAccess.csproj", "{AE6B3E14-0CB0-4303-8D14-6A8C0381634C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insta.BusinessLogic", "Insta.BusinessLogic\Insta.BusinessLogic.csproj", "{E2622346-4CB4-4E48-92C5-D70F465A7588}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{AE6B3E14-0CB0-4303-8D14-6A8C0381634C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE6B3E14-0CB0-4303-8D14-6A8C0381634C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE6B3E14-0CB0-4303-8D14-6A8C0381634C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2622346-4CB4-4E48-92C5-D70F465A7588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2622346-4CB4-4E48-92C5-D70F465A7588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2622346-4CB4-4E48-92C5-D70F465A7588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2622346-4CB4-4E48-92C5-D70F465A7588}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
