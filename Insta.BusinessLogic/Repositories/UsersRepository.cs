@@ -19,71 +19,43 @@ namespace Insta.BusinessLogic.Repositories
 {
     public sealed class UsersRepository
     {
-        public async Task<UserEntity> FindUser(string userName, string password)
+        public bool FindUser(string userName, string password)
         {
-            Guard.ArgumentNotNullOrEmpty(userName, nameof(userName));
-            Guard.ArgumentNotNullOrEmpty(password, nameof(password));
-
-            using var context = new InstaContext();
-            var encryptedPassword = StringEncryptor.Encrypt(password);
-
-            var userData = await context
-                .Set<UserRecord>()
-                .Include(x => x.Profile)
-                .Where(n => n.Profile.UserName == userName && n.EncryptedPassword == encryptedPassword)
-                .Join(
-                    context.Set<EntityRecord>(),
-                    u => u.UserId,
-                    e => e.EntityId,
-                    (u, e) => new { User = u, Entity = e })
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            if (userData == null)
+            var encryptedPass = StringEncryptor.Encrypt(password);
+            using (var context = new InstaContext())
             {
-                return null;
+                return context.UserRecords.Any(
+                    n => n.Profile.UserName == userName && n.EncryptedPassword == encryptedPass);
+          
+
+
             }
 
-            return userData.User.TonEntity(userData.Entity);
+
         }
+        public UserRecord GetUser(string userName,string password) {
+            var encryptedPass = StringEncryptor.Encrypt(password);
+            using (var context = new InstaContext()) 
+            { return context.UserRecords.FirstOrDefault(
+                n => n.Profile.UserName == userName && n.EncryptedPassword == encryptedPass); } }
 
-        public async Task<int> CreateUser(UserEntity user, string password)
-        {
-            Guard.ArgumentNotNull(user, nameof(user));
-            Guard.ArgumentNotNullOrEmpty(password, nameof(password));
-
-            var userRecord = user.ToRecord(password);
-            using var scope = new TransactionScope(
-                TransactionScopeOption.Required,
-                new TransactionOptions
+        public UserRecord DeleteUser(string userName, string password) {
+            var encryptedPass = StringEncryptor.Encrypt(password);
+            using (var context = new InstaContext()) {
+                UserRecord user = context.UserRecords.FirstOrDefault(
+                    n => n.Profile.UserName == userName && n.EncryptedPassword == encryptedPass);
+                    if ( user!= null)
                 {
-                    IsolationLevel = IsolationLevel.ReadUncommitted
-                },
-                TransactionScopeAsyncFlowOption.Enabled);
+                  
+                    context.UserRecords.Remove(user);
+                    context.SaveChanges();
 
-            using var context = new InstaContext();
-
-            await context
-                .Set<UserRecord>()
-                .AddAsync(userRecord);
-
-            await context.SaveChangesAsync();
-
-            var userEntity = new EntityRecord
-            {
-                EntityGuid = Guid.NewGuid(),
-                EntityId = userRecord.UserId,
-                EntityTypeId = (int)EntityType.User
-            };
-
-            await context
-                 .Set<EntityRecord>()
-                 .AddAsync(userEntity);
-
-            await context.SaveChangesAsync();
-            scope.Complete();
-
-            return userEntity.EntityId;
+                       
+                }
+                return user;
+            }
         }
+       
+
     }
 }

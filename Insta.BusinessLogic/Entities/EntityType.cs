@@ -2,6 +2,8 @@
 {
     public enum EntityType
     {
-        User = 1
+        User = 1,
+        Post = 2,
     }
+    
 }
