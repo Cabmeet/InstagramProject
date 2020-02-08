@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Insta.BusinessLogic.Dto
 {
-   public void  class CommentDto
+   public class CommentDto
     {
         public int PostId { get; set; }
         public int UserId { get; set; }

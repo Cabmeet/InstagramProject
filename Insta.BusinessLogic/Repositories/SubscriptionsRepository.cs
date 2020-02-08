@@ -23,7 +23,7 @@ namespace Insta.BusinessLogic.Repositories
     public class SubscriptionsRepository
 
     {
-        public SubscriptionRecord AddSubscriber(int subscribedToUserId, int subscriberUserId)
+        public SubscriptionRecord AddSubscription(int subscribedToUserId, int subscriberUserId)
         {
             using (var context = new InstaContext())
             {
@@ -39,10 +39,7 @@ namespace Insta.BusinessLogic.Repositories
             }
         }
 
-
-
-
-        public SubscriptionRecord DeleteSubscriber(int subscribedToUserId, int subscriberUserId)
+        public void DeleteSubscription(int subscribedToUserId, int subscriberUserId)
         {
             using (var context = new InstaContext())
             {
@@ -57,9 +54,25 @@ namespace Insta.BusinessLogic.Repositories
 
 
                 }
-                return subscriber;
+                
             }
 
+        }
+        public SubscriptionRecord [] GetSubscriberUser(int userId)
+        {
+            using (var context = new InstaContext())
+            {
+                var subscriptions = context.SubscriptionRecords.Where(n => n.SubscriberUserId == userId).ToArray();
+                return subscriptions;
+            }
+        }
+        public SubscriptionRecord[] GetSubscribedToUser(int userId)
+        {
+            using (var context = new InstaContext())
+            {
+                var subscriptions = context.SubscriptionRecords.Where(n => n.SubscribedToUserId == userId).ToArray();
+                return subscriptions;
+            }
         }
     }
 }

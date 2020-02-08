@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Repositories\UniqueTagsRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Insta.DataAccess\Insta.DataAccess.csproj" />
   </ItemGroup>
 

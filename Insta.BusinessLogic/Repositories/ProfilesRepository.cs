@@ -22,7 +22,7 @@ namespace Insta.BusinessLogic.Repositories
 {
     public class ProfilesRepository
     {
-        public ProfileRecord UpdateProfile(string userName, string password,ProfileRecord newProfile) {
+        public void UpdateProfile(string userName, string password,ProfileRecord newProfile) {
             var encryptedPass = StringEncryptor.Encrypt(password);
             using
                 (var context = new InstaContext())
@@ -42,7 +42,7 @@ namespace Insta.BusinessLogic.Repositories
 
                      }
 
-                return profile;
+                
             }
 
 

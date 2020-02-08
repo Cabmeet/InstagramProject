@@ -18,5 +18,6 @@
 
         [ForeignKey("SubscriberUser")]
         public int SubscriberUserId { get; set; }
+        
     }
 }

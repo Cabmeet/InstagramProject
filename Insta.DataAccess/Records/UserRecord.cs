@@ -33,5 +33,6 @@
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int UserId { get; set; }
+        public int SubscriptionRecord { get; set; }
     }
 }

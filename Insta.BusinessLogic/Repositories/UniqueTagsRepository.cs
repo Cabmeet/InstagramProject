@@ -8,7 +8,7 @@ namespace Insta.BusinessLogic.Repositories
 
     using Insta.DataAccess.Context;
 
-    class UniqueTagsRepository
+    public class UniqueTagsRepository
     {
         public bool FindUniqueTags(string tag)
         {

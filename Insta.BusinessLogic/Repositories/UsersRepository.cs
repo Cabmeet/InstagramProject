@@ -39,7 +39,7 @@ namespace Insta.BusinessLogic.Repositories
             { return context.UserRecords.FirstOrDefault(
                 n => n.Profile.UserName == userName && n.EncryptedPassword == encryptedPass); } }
 
-        public UserRecord DeleteUser(string userName, string password) {
+        public void DeleteUser(string userName, string password) {
             var encryptedPass = StringEncryptor.Encrypt(password);
             using (var context = new InstaContext()) {
                 UserRecord user = context.UserRecords.FirstOrDefault(
@@ -52,7 +52,7 @@ namespace Insta.BusinessLogic.Repositories
 
                        
                 }
-                return user;
+                
             }
         }
        

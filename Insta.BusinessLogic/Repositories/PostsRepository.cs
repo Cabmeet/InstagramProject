@@ -3,6 +3,7 @@ using Insta.BusinessLogic.Encryption;
 using Insta.BusinessLogic.Entities;
 using Insta.DataAccess.Context;
 using Insta.DataAccess.Records;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,7 +56,7 @@ namespace Insta.BusinessLogic.Repositories
 
             }
         }
-        public PostRecord UpdateGeolocation(int postId, string geolocation)
+        public void UpdateGeolocation(int postId, string geolocation)
         {
             using (var context = new InstaContext())
             {
@@ -65,7 +66,7 @@ namespace Insta.BusinessLogic.Repositories
                     post.Geolocation = geolocation;
                     context.SaveChanges();
                 }
-                return post;
+
 
 
             }
@@ -77,24 +78,25 @@ namespace Insta.BusinessLogic.Repositories
 
 
 
-        public DescriptionRecord UpdateText(int postId, string text)
+        public void UpdateDescription(int postId, string text)
         {
             using (var context = new InstaContext())
             {
-                DescriptionRecord post = context.DescriptionRecords.FirstOrDefault(
+                DescriptionRecord description
+                    = context.DescriptionRecords.FirstOrDefault(
                     n => n.PostId == postId);
-                if (post != null)
+                if (description != null)
                 {
-                    post.Text = text;
+                    description.Text = text;
                     context.SaveChanges();
 
                 }
-                return post;
+                ;
 
             }
 
         }
-        public PostRecord AddTag(int postId, string[] tags)
+        public void AddTag(int postId, string[] tags)
         {
             using (var context = new InstaContext())
             {
@@ -130,10 +132,10 @@ namespace Insta.BusinessLogic.Repositories
                     }
 
                 }
-                return post;
+
             }
         }
-        public void DeleteTag(int postId, string[] tags)
+        public void DeleteTags(int postId, string[] tags)
         {
             using (var context = new InstaContext())
             {
@@ -214,22 +216,21 @@ namespace Insta.BusinessLogic.Repositories
                 context.SaveChanges();
             }
         }
-        public void AddComment(CommentDto[] commentDtos)
+        public void AddComment(CommentDto comment1)
         {
             using (var context = new InstaContext())
             {
-                foreach (CommentDto comment1 in commentDtos)
-                {
 
-                    var comment = new CommentRecord();
-                    comment.CreatedAt = comment1.CreatedAt;
-                    comment.PostId = comment1.PostId;
-                    comment.UserId = comment1.UserId;
-                    comment.ParentCommentId = comment1.ParentCommentId;
-                    comment.Text = comment1.Text;
-                    context.CommentRecords.Add(comment);
-                    context.SaveChanges();
-                }
+
+                var comment = new CommentRecord();
+                comment.CreatedAt = comment1.CreatedAt;
+                comment.PostId = comment1.PostId;
+                comment.UserId = comment1.UserId;
+                comment.ParentCommentId = comment1.ParentCommentId;
+                comment.Text = comment1.Text;
+                context.CommentRecords.Add(comment);
+                context.SaveChanges();
+
             }
         }
 
@@ -244,6 +245,46 @@ namespace Insta.BusinessLogic.Repositories
                 context.SaveChanges();
 
 
+            }
+        }
+        public List<PostDto> GetFeed(int userId)
+        {
+
+            using (var context = new InstaContext())
+            {
+                var subscriptions = context.SubscriptionRecords.Where(n => n.SubscriberUserId == userId)
+                    .Include(n => n.SubscriberUser)
+                    .AsNoTracking().ToArray();
+
+                var subscrUserIds = subscriptions.Select(n => n.SubscribedToUserId);
+                var posts = context.PostRecords.Where(n => subscrUserIds.Contains(n.UserId)).Include(n => n.Description)
+                    .Include(n => n.Tags).
+                    ThenInclude(n => n.UniqueTag).Include(n => n.User).ThenInclude(n => n.Profile)
+                    .OrderByDescending(n => n.CreatedAt).Take(10);
+                var subscrPost = new List<PostDto>();
+
+                foreach (PostRecord post in posts)
+                {
+                   var postDto = new PostDto();
+                    var entity = context.EntityRecords.First(n => n.EntityId == post.PostId);
+                    var photos = entity.Photos.ToArray();
+                    var likes = entity.Likes.ToArray();
+                    postDto.CreatedAt = post.CreatedAt;
+                    postDto.Geolocation = post.Geolocation;
+                    postDto.Likes = likes.Length;
+                    postDto.Tags = post.Tags.Select(n => n.UniqueTag.Text).ToArray();
+                    postDto.Text = post.Description.Text;
+                    postDto.Photos = photos.Select(n => new PhotoDto()
+                    {
+                        Order = n.Order,
+                        CloudUrl = n.CloudUrl,
+                        PhotoId = n.PhotoId,
+                    }).ToArray();
+                    postDto.UserName = post.User.Profile.UserName;
+                    subscrPost.Add(postDto);
+                    
+                }
+                    return subscrPost;
             }
         }
 
