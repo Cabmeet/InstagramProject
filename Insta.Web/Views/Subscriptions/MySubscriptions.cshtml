@@ -1,0 +1,14 @@
+﻿@model Insta.BusinessLogic.Entities.UserEntity[]
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>@Model.Length people I'm following</h2>
+<br />
+@foreach (var user in Model)
+{
+    <partial name="_UserPartial" model="@user" />
+    <div class="border-top my-3"></div>
+}

@@ -1,0 +1,115 @@
+﻿@model Insta.BusinessLogic.Entities.PostEntity
+
+@{
+    ViewBag.Title = "View Post";
+    Layout = "_Layout";
+}
+
+<div class="card">
+    
+    @if (this.ViewBag.CanEdit)
+    {
+        <div class="card-header">
+            <div class="dropdown float-right">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Actions
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="#">Edit</a>
+                    <a id="delete-btn" class="dropdown-item" href="#">Delete</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.Photos.Length > 0)
+    {
+        <div class="row">
+
+            @foreach (var photo in Model.Photos.OrderBy(x => x.Order))
+            {
+                var size = 12 / Model.Photos.Length;
+                <img class="d-block col-lg-@size" src="@photo.CloudUrl" alt="Post image">
+            }
+        </div>
+    }
+
+    <div class="card-body">
+        <p class="card-text">@Model.Description</p>
+        <small class="text-muted">
+            @if (!string.IsNullOrEmpty(Model.Location))
+            {
+                <i class="fas fa-location-arrow"></i>
+                @Model.Location
+                <br/>
+            }
+
+            @Model.CreatedAt.ToString("yyyy-MM-dd hh:mm")
+        </small>
+    </div>
+    <div class="card-footer text-muted">
+        <span>
+            @foreach (var tag in Model.Tags)
+            {
+                <a href="#">#@tag</a>
+            }
+        </span>
+        <br/>
+        <input name="postId" type="hidden" value="@Model.Id"/>
+        <span class="float-right">
+
+            <button id="like-btn" class="btn btn-outline-dark">
+                <i class="fas fa-thumbs-up"></i>
+            </button>
+            &nbsp;
+            <span id="likes-meter">@Model.Likes</span>
+        </span>
+    </div>
+</div>
+
+<br />
+
+<form asp-controller="Posts" method="post" asp-action="AddComment" enctype="multipart/form-data">
+    <input type="hidden" name="postId" value="@Model.Id" />
+    <textarea required="required" name="text" class="form-control" rows="3" maxlength="250" placeholder="Your comment"></textarea>
+    <div class="row">
+        <div class="col-lg-12">
+            <button type="submit" class="btn btn-sm btn-outline-dark float-right" style="margin-top: 5px">Add</button>
+        </div>
+    </div>
+</form>
+<br />
+<ul class="list-unstyled">
+    @foreach (var comment in Model.Comments)
+    {
+        <li class="media">
+            <img src="@comment.UserProfileCloudUrl" class="mr-3" style="max-width: 100px">
+            <div class="media-body">
+                <h6>@comment.UserName</h6>
+                <p>@comment.Text</p>
+                <small class="text-muted">@comment.CreatedAt.ToString("yyyy-MM-dd hh:mm")</small>
+            </div>
+        </li>
+        <div class="border-top my-3"></div>
+    }
+</ul>
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            $("#like-btn").click(function () {
+                $.post('@Url.Action("Like")', { postId: @Model.Id}, function(data, success) {
+                    $("#likes-meter").text(data.likesCount);
+                });
+            });
+
+            $("#delete-btn").click(function () {
+                $.post('@Url.Action("Delete", "Posts")', { postId: @Model.Id}, function(data, success) {
+                    console.log(data);
+                    window.location.href = data.url;
+                });
+            });
+        });
+    </script>
+}

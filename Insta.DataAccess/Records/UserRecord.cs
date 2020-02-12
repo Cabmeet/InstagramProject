@@ -30,9 +30,7 @@
 
         public List<SubscriptionRecord> Subscriptions { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public int UserId { get; set; }
-        public int SubscriptionRecord { get; set; }
+        public Guid UserId { get; set; }
     }
 }

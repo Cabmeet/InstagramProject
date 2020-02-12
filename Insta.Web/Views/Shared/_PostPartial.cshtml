@@ -1,0 +1,74 @@
+﻿@model Insta.BusinessLogic.Entities.PostEntity
+
+@{
+    Layout = null;
+}
+
+<div class="col-lg-3 col-sm-12" style="margin-bottom: 1em;">
+    <div class="card">
+        <dic class="card-header">
+            <a class="float-right" href="@Url.Action("View", "Posts", new {postId = Model.Id})">View</a>
+        </dic>
+        @if (Model.Photos.Length > 0)
+        {
+            <div id="carousel-@Model.Id" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    @foreach (var photo in Model.Photos)
+                    {
+                        var active = photo.Order == 0 ? "active" : string.Empty;
+                        <li data-target="#carousel-@Model.Id" data-slide-to="@photo.Order" class="@active"></li>
+                    }
+                </ol>
+                <div class="carousel-inner">
+                    @foreach (var photo in Model.Photos.OrderBy(x => x.Order))
+                    {
+                        var active = photo.Order == 0 ? "active" : string.Empty;
+
+                        <div class="carousel-item @active">
+                            <img class="d-block w-100" src="@photo.CloudUrl" alt="Post image">
+                        </div>
+                    }
+                </div>
+                <a class="carousel-control-prev" href="#carousel-@Model.Id" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#carousel-@Model.Id" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+        }
+
+        <div class="card-body">
+
+            <p class="card-text">@Model.Description.Substring(0, Math.Min(@Model.Description.Length, 249))</p>
+
+            <small class="text-muted">
+                @if (!string.IsNullOrEmpty(Model.Location))
+                {
+                    <i class="fas fa-location-arrow"></i>
+                    @Model.Location
+                    <br/>
+                }
+
+                @Model.CreatedAt.ToString("yyyy-MM-dd hh:mm")
+                <br/>
+                by <a href="@Url.Action("Profile", "Profile", new {userId = Model.UserId})">@Model.UserName</a>
+            </small>
+        </div>
+        <div class="card-footer text-muted">
+
+            <span>
+                @foreach (var tag in Model.Tags)
+                {
+                    <a href=@Url.Action("Search","Search", new {text = tag, page = 0})>#@tag</a>
+                }
+            </span>
+            <br/>
+            <span class="float-right">
+                <i class="fas fa-thumbs-up"></i> @Model.Likes
+            </span>
+        </div>
+    </div>
+</div>

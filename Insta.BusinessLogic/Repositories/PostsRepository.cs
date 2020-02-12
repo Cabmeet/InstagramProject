@@ -1,293 +1,341 @@
-﻿using Insta.BusinessLogic.Dto;
-using Insta.BusinessLogic.Encryption;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Insta.BusinessLogic.Converters;
 using Insta.BusinessLogic.Entities;
 using Insta.DataAccess.Context;
 using Insta.DataAccess.Records;
+
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
 
 namespace Insta.BusinessLogic.Repositories
 {
     public class PostsRepository
     {
-        public void AddPost(int userId, PostRecord post)
+        public async Task AddComment(CommentEntity comment)
         {
+            Guard.ArgumentNotNull(comment, nameof(comment));
 
             using (var context = new InstaContext())
             {
-                var user = context.UserRecords.FirstOrDefault(
-                  n => n.UserId == userId);
-                if (user != null)
+                context.CommentRecords.Add(new CommentRecord
                 {
-                    context.PostRecords.Add(post);
-                    context.SaveChanges();
-                    EntityRecord entityRecord = new EntityRecord();
-                    entityRecord.EntityGuid = Guid.NewGuid();
-                    entityRecord.EntityId = post.PostId;
-                    entityRecord.EntityTypeId = (int)EntityType.Post;
-                    context.EntityRecords.Add(entityRecord);
-                    context.SaveChanges();
+                    PostId = comment.PostId,
+                    UserId = comment.UserId,
+                    Text = comment.Text,
+                    CreatedAt = DateTimeOffset.Now
+                });
 
-                }
+                await context.SaveChangesAsync();
             }
         }
-        public void DeletePost(int postId)
+
+        public async Task AddPhotos(PhotoEntity[] photos)
         {
+            Guard.ArgumentNotNull(photos, nameof(photos));
+
             using (var context = new InstaContext())
             {
-                PostRecord post = context.PostRecords.FirstOrDefault(n => n.PostId == postId);
-                if (post != null)
-                {
-                    context.PostRecords.Remove(post);
+                await context.PhotoRecords.AddRangeAsync(photos.Select(x => x.ToRecord()));
 
-                    context.SaveChanges();
-                    var entity = context.EntityRecords.First(n => n.EntityId == postId);
-                    context.EntityRecords.Remove(entity);
-                    context.SaveChanges();
-
-
-
-
-                }
-
-
+                await context.SaveChangesAsync();
             }
         }
-        public void UpdateGeolocation(int postId, string geolocation)
+
+        public async Task<int> AddPost(PostEntity post)
         {
+            Guard.ArgumentNotNull(post, nameof(post));
+
             using (var context = new InstaContext())
             {
-                PostRecord post = context.PostRecords.FirstOrDefault(n => n.PostId == postId);
-                if (post != null)
+                var postRecord = new PostRecord
                 {
-                    post.Geolocation = geolocation;
-                    context.SaveChanges();
-                }
-
-
-
-            }
-
-        }
-
-
-
-
-
-
-        public void UpdateDescription(int postId, string text)
-        {
-            using (var context = new InstaContext())
-            {
-                DescriptionRecord description
-                    = context.DescriptionRecords.FirstOrDefault(
-                    n => n.PostId == postId);
-                if (description != null)
-                {
-                    description.Text = text;
-                    context.SaveChanges();
-
-                }
-                ;
-
-            }
-
-        }
-        public void AddTag(int postId, string[] tags)
-        {
-            using (var context = new InstaContext())
-            {
-                PostRecord post = context.PostRecords.FirstOrDefault(n => n.PostId == postId);
-                if (post != null)
-                {
-                    foreach (string t in tags)
+                    Description = new DescriptionRecord
                     {
-                        UniqueTagRecord tag = context.UniqueTagRecords.FirstOrDefault(n => n.Text == t);
-                        if (tag != null)
-                        {
-                            TagRecord tagRecord = new TagRecord();
-                            tagRecord.PostId = postId;
-                            tagRecord.UniqueTagId = tag.UniqueTagId;
+                        Text = post.Description
+                    },
+                    Geolocation = post.Location,
+                    UserId = post.UserId,
+                    CreatedAt = DateTimeOffset.Now,
+                };
 
-                            post.Tags.Add(tagRecord);
-                        }
-                        else
-                        {
-                            UniqueTagRecord uniqueTagRecord = new UniqueTagRecord();
-                            uniqueTagRecord.Text = t;
-                            context.UniqueTagRecords.Add(uniqueTagRecord);
-                            context.SaveChanges();
-                            TagRecord tagRecord = new TagRecord();
-                            tagRecord.PostId = postId;
-                            tagRecord.UniqueTagId = uniqueTagRecord.UniqueTagId;
-                            post.Tags.Add(tagRecord);
+                await context.PostRecords.AddAsync(postRecord);
 
+                await context.SaveChangesAsync();
 
-                        }
+                var entityRecord = new EntityRecord
+                {
+                    ExternalEntityId = postRecord.PostId,
+                    EntityTypeId = (int)EntityType.Post
+                };
 
-                        context.SaveChanges();
-                    }
+                await context.EntityRecords.AddAsync(entityRecord);
 
-                }
+                await context.SaveChangesAsync();
 
+                return postRecord.PostId;
             }
         }
-        public void DeleteTags(int postId, string[] tags)
+
+        public async Task AddTags(int postId, string[] tags)
         {
+            Guard.ArgumentNotNull(tags, nameof(tags));
+
             using (var context = new InstaContext())
             {
+                var post = await context.PostRecords
+                               .Include(x => x.Tags)
+                               .FirstOrDefaultAsync(n => n.PostId == postId);
 
-                PostRecord post = context.PostRecords.FirstOrDefault(n => n.PostId == postId);
                 if (post != null)
                 {
+                    var existingTags = await context.UniqueTagRecords
+                                           .Where(x => tags.Contains(x.Text))
+                                           .ToArrayAsync();
 
-                    foreach (TagRecord tag in post.Tags)
-                    {
-                        if (tags.Contains(tag.UniqueTag.Text))
+                    post.Tags.AddRange(
+                        existingTags
+                            .Where(x => !post.Tags.Select(t => t.UniqueTagId).Contains(x.UniqueTagId))
+                            .Select(
+                                x => new TagRecord
+                                {
+                                    UniqueTagId = x.UniqueTagId
+                                }));
+
+                    var newTags = tags
+                        .Where(x => !existingTags.Select(t => t.Text).Contains(x, StringComparer.OrdinalIgnoreCase))
+                        .Select(
+                            x => new UniqueTagRecord
+                            {
+                                Text = x
+                            })
+                        .ToArray();
+
+                    await context.UniqueTagRecords.AddRangeAsync(newTags);
+                    await context.SaveChangesAsync();
+
+                    post.Tags.AddRange(newTags.Select(x =>
+                        new TagRecord
                         {
-                            context.TagRecords.Remove(tag);
-                            context.SaveChanges();
-                        }
+                            UniqueTagId = x.UniqueTagId
+                        }));
 
-                    }
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<Container<PostEntity>> GetFeed(Guid userId, int page, int take)
+        {
+            var sRepo = new SubscriptionsRepository();
+            var mySubscriptions = await sRepo.GetSubscriptions(userId);
+
+            using (var context = new InstaContext())
+            {
+                var userIds = mySubscriptions.Select(x => x.Id);
+
+                var total = await context.PostRecords.AsNoTracking()
+                                .CountAsync(n => userIds.Contains(n.UserId));
+
+                var posts = await context.PostRecords.AsNoTracking()
+                                .Where(n => userIds.Contains(n.UserId))
+                                .Include(n => n.Description)
+                                .Include(n => n.Tags)
+                                .ThenInclude(n => n.UniqueTag)
+                                .Include(n => n.User)
+                                .ThenInclude(n => n.Profile)
+                                .OrderByDescending(n => n.CreatedAt)
+                                .Skip(page * take)
+                                .Take(take)
+                                .ToArrayAsync();
+
+                var postEntities = new List<PostEntity>();
+
+                foreach (var post in posts)
+                {
+                    postEntities.Add(await this.ToPostEntity(post));
                 }
 
-
-            }
-
-        }
-        public void AddLike(int postId, int userId)
-        {
-            using (var context = new InstaContext())
-            {
-                var like = new LikeRecord();
-                like.CreatedAt = DateTimeOffset.Now;
-                like.EntityId = postId;
-                like.UserId = userId;
-                context.LikeRecords.Add(like);
-                context.SaveChanges();
-
-
-
-
-            }
-
-        }
-
-
-        public void DeleteLike(int postId, int userId)
-        {
-            using (var context = new InstaContext())
-            {
-                var like = context.LikeRecords.First(n => n.EntityId == postId && n.UserId == userId);
-                context.LikeRecords.Remove(like);
-                context.SaveChanges();
-
-            }
-        }
-        public void AddPhoto(PhotoDto[] photoDtos)
-        {
-            using (var context = new InstaContext())
-            {
-                foreach (PhotoDto photo1 in photoDtos)
+                return new Container<PostEntity>
                 {
-                    var photo = new PhotoRecord();
-                    photo.CloudUrl = photo1.CloudUrl;
-                    photo.CreatedAt = photo1.CreatedAt;
-                    photo.EntityId = photo1.EntityId;
-                    photo.Order = photo1.Order;
-                    photo.Height = photo1.Height;
-                    photo.Width = photo1.Width;
-                    context.PhotoRecords.Add(photo);
+                    Entities = postEntities.ToArray(),
+                    Page = page,
+                    TotalEntities = total
+                };
+            }
+        }
 
+        public async Task<Container<PostEntity>> GetPosts(Guid userId, int page, int take)
+        {
+            using (var context = new InstaContext())
+            {
+                var totalPostsCount = await context.PostRecords
+                                          .AsNoTracking()
+                                          .CountAsync(x => x.UserId == userId);
+
+                var posts = await context.PostRecords
+                                .AsNoTracking()
+                                .Where(x => x.UserId == userId)
+                                .OrderByDescending(x => x.CreatedAt)
+                                .Skip(page * take)
+                                .Take(take)
+                                .Include(x => x.Tags)
+                                .ThenInclude(x => x.UniqueTag)
+                                .Include(x => x.Description)
+                                .Include(x => x.User)
+                                .ThenInclude(x => x.Profile)
+                                .ToArrayAsync();
+
+                var postEntities = new List<PostEntity>();
+                foreach (var post in posts)
+                {
+                    postEntities.Add(await this.ToPostEntity(post));
                 }
-                context.SaveChanges();
-            }
-        }
-        public void DeletePhoto(int postId, int photoId)
-        {
-            using (var context = new InstaContext())
-            {
-                var photo = context.PhotoRecords.First(n => n.EntityId == postId && n.PhotoId == photoId);
-                context.PhotoRecords.Remove(photo);
-                context.SaveChanges();
-            }
-        }
-        public void AddComment(CommentDto comment1)
-        {
-            using (var context = new InstaContext())
-            {
 
-
-                var comment = new CommentRecord();
-                comment.CreatedAt = comment1.CreatedAt;
-                comment.PostId = comment1.PostId;
-                comment.UserId = comment1.UserId;
-                comment.ParentCommentId = comment1.ParentCommentId;
-                comment.Text = comment1.Text;
-                context.CommentRecords.Add(comment);
-                context.SaveChanges();
-
-            }
-        }
-
-
-
-        public void UpdateComment(int postId, int commentId, string text)
-        {
-            using (var context = new InstaContext())
-            {
-                var comment = context.CommentRecords.First(n => n.PostId == postId && n.CommentId == commentId);
-                comment.Text = text;
-                context.SaveChanges();
-
-
-            }
-        }
-        public List<PostDto> GetFeed(int userId)
-        {
-
-            using (var context = new InstaContext())
-            {
-                var subscriptions = context.SubscriptionRecords.Where(n => n.SubscriberUserId == userId)
-                    .Include(n => n.SubscriberUser)
-                    .AsNoTracking().ToArray();
-
-                var subscrUserIds = subscriptions.Select(n => n.SubscribedToUserId);
-                var posts = context.PostRecords.Where(n => subscrUserIds.Contains(n.UserId)).Include(n => n.Description)
-                    .Include(n => n.Tags).
-                    ThenInclude(n => n.UniqueTag).Include(n => n.User).ThenInclude(n => n.Profile)
-                    .OrderByDescending(n => n.CreatedAt).Take(10);
-                var subscrPost = new List<PostDto>();
-
-                foreach (PostRecord post in posts)
+                return new Container<PostEntity>
                 {
-                   var postDto = new PostDto();
-                    var entity = context.EntityRecords.First(n => n.EntityId == post.PostId);
-                    var photos = entity.Photos.ToArray();
-                    var likes = entity.Likes.ToArray();
-                    postDto.CreatedAt = post.CreatedAt;
-                    postDto.Geolocation = post.Geolocation;
-                    postDto.Likes = likes.Length;
-                    postDto.Tags = post.Tags.Select(n => n.UniqueTag.Text).ToArray();
-                    postDto.Text = post.Description.Text;
-                    postDto.Photos = photos.Select(n => new PhotoDto()
+                    Entities = postEntities.ToArray(),
+                    Page = page,
+                    TotalEntities = totalPostsCount
+                };
+            }
+        }
+
+        public async Task<Container<PostEntity>> FindPostsByTags(Guid userId, string tag, int page, int take)
+        {
+            Guard.ArgumentNotNullOrEmpty(tag, nameof(tag));
+
+            using (var context = new InstaContext())
+            {
+                var allTags = context.TagRecords
+                                          .AsNoTracking()
+                                          .Where(x => x.UniqueTag.Text.Contains(tag) &&
+                                                      x.Post.UserId != userId);
+
+                var totalPostsCount = await allTags.CountAsync();
+
+                var postIds = await allTags.OrderByDescending(x => x.Post.CreatedAt)
+                    .Skip(page * take)
+                    .Take(take)
+                    .Select(x => x.PostId)
+                    .ToArrayAsync();
+
+                var posts = await context.PostRecords.AsNoTracking()
+                      .Include(x => x.Tags)
+                      .ThenInclude(x => x.UniqueTag)
+                      .Include(x => x.Description)
+                      .Include(x => x.User)
+                      .ThenInclude(x => x.Profile)
+                      .Include(x => x.Comments)
+                      .ThenInclude(x => x.User)
+                      .ThenInclude(x => x.Profile)
+                      .Where(x => postIds.Contains(x.PostId))
+                      .ToArrayAsync();
+
+                var postEntities = new List<PostEntity>();
+                foreach (var post in posts)
+                {
+                    var entity = await context.EntityRecords
+                                     .Include(x => x.Photos)
+                                     .Include(x => x.Likes)
+                                     .FirstAsync(x => x.ExternalEntityId == post.PostId);
+                    var photos = entity.Photos.Select(x => x.ToEntity()).ToArray();
+                    var postEntity = post.ToEntity();
+                    postEntity.Photos = photos;
+                    postEntity.Likes = entity.Likes.Count;
+
+                    postEntities.Add(postEntity);
+                }
+
+                return new Container<PostEntity>
+                {
+                    Entities = postEntities.ToArray(),
+                    Page = page,
+                    TotalEntities = totalPostsCount
+                };
+            }
+        }
+
+        public async Task<PostEntity> GetPost(int postId)
+        {
+            using (var context = new InstaContext())
+            {
+                var post = await context.PostRecords.AsNoTracking()
+                               .Include(x => x.Tags)
+                               .ThenInclude(x => x.UniqueTag)
+                               .Include(x => x.Description)
+                               .Include(x => x.User)
+                               .ThenInclude(x => x.Profile)
+                               .Include(x => x.Comments)
+                               .ThenInclude(x => x.User)
+                               .ThenInclude(x => x.Profile)
+                               .FirstOrDefaultAsync(x => x.PostId == postId);
+
+                var entity = await context.EntityRecords
+                                 .Include(x => x.Photos)
+                                 .Include(x => x.Likes)
+                                 .FirstAsync(x => x.ExternalEntityId == post.PostId);
+
+                var photos = entity.Photos.Select(x => x.ToEntity()).ToArray();
+                var postEntity = post.ToEntity();
+
+                var comments = post.Comments.Select(
+                    x => new CommentEntity
                     {
-                        Order = n.Order,
-                        CloudUrl = n.CloudUrl,
-                        PhotoId = n.PhotoId,
+                        CreatedAt = x.CreatedAt,
+                        Text = x.Text,
+                        UserName = x.User.Profile.UserName,
+                        PostId = x.PostId,
+                        UserProfileCloudUrl = x.User.Profile.ImageCloudUrl
                     }).ToArray();
-                    postDto.UserName = post.User.Profile.UserName;
-                    subscrPost.Add(postDto);
-                    
-                }
-                    return subscrPost;
+
+                postEntity.Photos = photos;
+                postEntity.Likes = entity.Likes.Count;
+                postEntity.Comments = comments;
+
+                return postEntity;
             }
         }
 
+        public async Task Delete(int postId, Guid userId)
+        {
+            using (var context = new InstaContext())
+            {
+                var post = await context.PostRecords.FirstOrDefaultAsync(x => x.UserId == userId && x.PostId == postId);
+                if (post == null)
+                {
+                    return;
+                }
+
+                context.PostRecords.Remove(post);
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private async Task<PostEntity> ToPostEntity(PostRecord post)
+        {
+            using (var context = new InstaContext())
+            {
+                var entity = await context.EntityRecords
+                                 .AsNoTracking()
+                                 .Include(x => x.Photos)
+                                 .Include(x => x.Likes)
+                                 .FirstAsync(x => x.ExternalEntityId == post.PostId);
+
+                var photos = entity.Photos
+                    .Select(x => x.ToEntity())
+                    .ToArray();
+
+                var postEntity = post.ToEntity();
+                postEntity.Photos = photos;
+                postEntity.Likes = entity.Likes.Count;
+
+                return postEntity;
+            }
+        }
     }
 }
-

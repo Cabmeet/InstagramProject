@@ -1,4 +1,6 @@
-﻿namespace Insta.DataAccess.Records
+﻿using System;
+
+namespace Insta.DataAccess.Records
 {
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
@@ -10,7 +12,6 @@
 
         public string Description { get; set; }
 
-        [Required]
         public string FirstName { get; set; }
 
         public int Gender { get; set; }
@@ -22,9 +23,11 @@
         public UserRecord User { get; set; }
 
         [Key, ForeignKey("User")]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Required]
         public string UserName { get; set; }
+
+        public string ImageCloudUrl { get; set; }
     }
 }

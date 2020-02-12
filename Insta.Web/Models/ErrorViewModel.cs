@@ -1,5 +1,3 @@
-using System;
-
 namespace Insta.Web.Models
 {
     public class ErrorViewModel

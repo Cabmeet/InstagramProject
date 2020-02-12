@@ -1,0 +1,87 @@
+﻿@model UserPageViewModel
+
+@{
+    ViewBag.Title = "My Posts";
+    Layout = "_Layout";
+}
+<div class="row" style="margin-bottom: 2em;">
+
+    <div class="col-lg-2 col-sm-12 p-2">
+        <img class="embed-responsive rounded-circle d-block mx-auto mx-md-0" src="@Model.User.ProfileImageCloudUrl" style="max-width: 240px" alt="User Image">
+    </div>
+    <div class="col-lg-7 col-sm-12">
+        <h4 class="mt-0">@Model.User.FirstName @Model.User.LastName <small>(@Model.User.UserName)</small></h4>
+        <blockquote> <p>@Model.User.Description</p></blockquote>
+        <div class="border-top my-3"></div>
+        @if (Model.Posts.Entities.Length > 0)
+        {
+            <h6>Total posts: @Model.Posts.TotalEntities</h6>
+        }
+        @if (Model.MyPosts)
+        {
+            <a class="btn btn-outline-dark" href="@Url.Action("Add", "Posts")">Create post</a>
+        }
+    </div>
+    <div class="col-lg-3">
+        @if (Model.MyPosts)
+        {
+            <h5>@Model.Following <a class="text-dark" href="@Url.Action("MySubscriptions", "Subscriptions")">Following</a></h5>
+            <h5>@Model.Followers <a class="text-dark" href="@Url.Action("MyFollowers", "Subscriptions")">Followers</a></h5>
+            <a href="@Url.Action("Edit","Profile")"><i class="fa fa-user-edit"></i> Edit profile</a>
+        }
+        else
+        {
+            <h5>@Model.Following Following</h5>
+            <h5>@Model.Followers Followers</h5>
+        }
+
+        @if (!Model.MyPosts)
+        {
+            <partial name="_SocialActionsPartial" model="@Model.User" />
+        }
+    </div>
+</div>
+<div class="border-top my-3"></div>
+
+@if (Model.Posts.Entities.Length == 0)
+{
+    if (Model.MyPosts)
+    {
+        <div class="alert alert-primary" role="alert">
+            You don't have any posts yet but you <a href="@Url.Action("Add", "Posts")" class="alert-link">can create one</a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-primary" role="alert">
+            The user does not have posts yet
+        </div>
+    }
+}
+else
+{
+    <div class="row">
+        @foreach (var post in Model.Posts.Entities)
+        {
+            <partial name="_PostPartial" model="@post" />
+        }
+    </div>
+
+    <div class="border-top my-3"></div>
+
+    var totalPages = (int)Math.Ceiling(Model.Posts.TotalEntities / 9.0);
+
+    if (totalPages > 1)
+    {
+        <nav aria-label="pagination">
+            <ul class="pagination justify-content-center">
+                @for (var i = 1; i <= totalPages; i++)
+                {
+                    var isActive = i - 1 == Model.Posts.Page ? "active" : string.Empty;
+                    <li class="page-item @isActive"><a class="page-link" href="@Url.Action("MyPage", "Profile", new {page= i -1})">@i</a></li>
+
+                }
+            </ul>
+        </nav>
+    }
+}

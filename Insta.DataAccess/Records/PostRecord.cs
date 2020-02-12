@@ -20,22 +20,12 @@
         [Key]
         public int PostId { get; set; }
 
-        public static void SaveChanges()
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void Update(PostRecord post)
-        {
-            throw new NotImplementedException();
-        }
-
         public List<TagRecord> Tags { get; set; }
 
         public UserRecord User { get; set; }
 
         [ForeignKey("User")]
-        public int UserId { get; set; }
-       
+        public Guid UserId { get; set; }
+
     }
 }

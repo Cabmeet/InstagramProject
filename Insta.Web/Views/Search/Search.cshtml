@@ -1,0 +1,80 @@
+﻿@model FindResultsViewModel
+
+@{
+    ViewBag.Title = "Search";
+    Layout = "_Layout";
+}
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+
+    <li class="nav-item">
+        <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected="true">Posts</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="home-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="false">Users</a>
+    </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="profile-tab" style="margin-top: 1em">
+        @if (Model.Posts.Length == 0)
+        {
+            <div class="alert alert-primary" role="alert">
+                No posts found that match your search
+            </div>
+        }
+        else
+        {
+            <div class="row">
+
+                @foreach (var post in Model.Posts)
+                {
+                    <partial name="_PostPartial" model="@post" />
+                }
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade show" id="users" role="tabpanel" aria-labelledby="home-tab" style="margin-top: 1em">
+
+        @if (Model.Users.Length == 0)
+        {
+            <div class="alert alert-primary" role="alert">
+                No users found that match your search
+            </div>
+        }
+        else
+        {
+            @foreach (var user in Model.Users)
+            {
+                <partial name="_UserPartial" model="@user" />
+                <div class="border-top my-3"></div>
+            }
+        }
+    </div>
+</div>
+
+@*@section Scripts
+    {
+        <script>
+            $(function () {
+                $("#btn-action").click(function () {
+                    console.log("sdfdsf");
+
+                    var act = $("#action").val();
+                    $.post('@Url.Action("Manage", "Subscriptions")',
+                        {
+                            userId: '@Model.Id',
+                            action: act
+                        },
+                        function (data, success) {
+                            if (act == "u") {
+                                $("#action").val("s");
+                                $("#btn-action").prop('value', 'Subscribe');
+                            } else {
+                                $("#action").val("u");
+                                $("#btn-action").prop('value', 'Unsubscribe');
+                            }
+                        });
+                });
+            });
+        </script>
+    }*@

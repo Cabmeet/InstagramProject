@@ -1,0 +1,19 @@
+﻿@model Insta.BusinessLogic.Entities.UserEntity
+
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-2" style="max-width: 100px;">
+        <img class="embed-responsive rounded-circle"  src="@Model.ProfileImageCloudUrl" alt="User Image">
+    </div>
+    <div class="col-9">
+        <h5 class="mt-0"><a href="@Url.Action("Profile", "Profile", new {userId = Model.Id})">@Model.UserName</a></h5>
+        <p>@Model.Description</p>
+       
+    </div>
+    <div class="col-1 align-self-center">
+       <partial name="_SocialActionsPartial" model="@Model"/>
+    </div>
+</div>

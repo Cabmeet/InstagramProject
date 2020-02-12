@@ -1,0 +1,52 @@
+﻿@using Insta.BusinessLogic.Enums
+@model Insta.BusinessLogic.Entities.UserEntity
+
+@{
+    ViewBag.Title = "My Profile";
+    Layout = "_Layout";
+}
+<h1>Edit profile</h1>
+<form asp-controller="Profile" asp-action="Edit" enctype="multipart/form-data">
+    <div class="col-md-6">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="@Model.ProfileImageCloudUrl" class="rounded-circle" style="max-width: 100%" />
+                </div>
+                <div class="col-md-6 align-self-center">
+                    <input type="file" name="profileImage" accept="image/*" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input name="firstName" type="text" maxlength="80" class="form-control" id="name" asp-for="FirstName" />
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <input name="lastName" type="text" maxlength="80" class="form-control" id="lastname" asp-for="LastName" />
+        </div>
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <select name="gender" asp-for="Gender" id="gender" class="form-control" asp-items="Html.GetEnumSelectList<Gender>()">
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="age">Age</label>
+            <input name="age" type="number" min="1" max="120" class="form-control" id="age" asp-for="Age" />
+        </div>
+        <div class="form-group">
+            <label for="visibility">Visibility</label>
+            <select name="isVisible" id="visibility" class="form-control" asp-for="IsVisible">
+                <option value="true">Visible</option>
+                <option value="false">Hidden</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <input name="description" type="text" maxlength="250" class="form-control" id="bio" asp-for="Description" />
+        </div>
+        <button type="submit" class="btn btn btn-outline-dark">Update</button>
+    </div>
+</form>

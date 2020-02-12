@@ -1,0 +1,20 @@
+﻿@model Insta.BusinessLogic.Entities.UserEntity
+
+@{
+    Layout = null;
+}
+
+<form asp-controller="Subscriptions" asp-action="Manage">
+    <input type="hidden" name="otherUserId" value="@Model.Id" />
+
+    @if (Model.CanSubscribe)
+    {
+        <input id="action" type="hidden" name="action" value="s" />
+        <button id="btn-action" class="btn btn-primary">Subscribe</button>
+    }
+    else
+    {
+        <input id="action" type="hidden" name="action" value="u" />
+        <button id="btn-action" class="btn btn-danger">Unsubscribe</button>
+    }
+</form>

@@ -15,7 +15,7 @@ namespace Insta.DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.0")
+                .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -39,8 +39,8 @@ namespace Insta.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("CommentId");
 
@@ -74,10 +74,10 @@ namespace Insta.DataAccess.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid>("EntityGuid")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("EntityTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExternalEntityId")
                         .HasColumnType("int");
 
                     b.HasKey("EntityId");
@@ -116,8 +116,8 @@ namespace Insta.DataAccess.Migrations
                     b.Property<int>("EntityId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("LikeId");
 
@@ -174,8 +174,8 @@ namespace Insta.DataAccess.Migrations
                     b.Property<string>("Geolocation")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("PostId");
 
@@ -186,8 +186,8 @@ namespace Insta.DataAccess.Migrations
 
             modelBuilder.Entity("Insta.DataAccess.Records.ProfileRecord", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Age")
                         .HasColumnType("int");
@@ -196,11 +196,13 @@ namespace Insta.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
+
+                    b.Property<string>("ImageCloudUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
@@ -219,11 +221,11 @@ namespace Insta.DataAccess.Migrations
 
             modelBuilder.Entity("Insta.DataAccess.Records.SubscriptionRecord", b =>
                 {
-                    b.Property<int>("SubscriberUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("SubscriberUserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("SubscribedToUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("SubscribedToUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
@@ -268,10 +270,9 @@ namespace Insta.DataAccess.Migrations
 
             modelBuilder.Entity("Insta.DataAccess.Records.UserRecord", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");

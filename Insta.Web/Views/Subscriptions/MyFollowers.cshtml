@@ -1,0 +1,22 @@
+﻿@model Insta.BusinessLogic.Entities.UserEntity[]
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>@Model.Length people following me</h2>
+<br/>
+@foreach (var user in Model)
+{
+    <div class="row">
+        <div class="col-sm-2" style="max-width: 100px">
+            <img class="embed-responsive rounded-circle" src="@user.ProfileImageCloudUrl" alt="User Image">
+        </div>
+        <div class="col-sm-10">
+            <h5 class="mt-0"><a href="@Url.Action("Profile", "Profile", new { userId = user.Id })">@user.UserName</a></h5>
+            <p>@user.Description</p>
+        </div>
+    </div>
+    <div class="border-bottom my-3"></div>
+}

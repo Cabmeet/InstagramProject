@@ -1,79 +1,109 @@
-﻿using Insta.DataAccess.Context;
-using Insta.DataAccess.Records;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
+
 using Insta.BusinessLogic.Converters;
 using Insta.BusinessLogic.Entities;
-
-using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
-
-using System.Threading.Tasks;
-using System.Transactions;
-
-using Insta.BusinessLogic.Encryption;
 using Insta.DataAccess.Context;
 using Insta.DataAccess.Records;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
 
 namespace Insta.BusinessLogic.Repositories
 {
     public class SubscriptionsRepository
-
     {
-        public SubscriptionRecord AddSubscription(int subscribedToUserId, int subscriberUserId)
+        public async Task AddSubscription(Guid userId, Guid subscribedToUserId)
         {
             using (var context = new InstaContext())
             {
-                SubscriptionRecord subscriber = new SubscriptionRecord();
-                subscriber.SubscribedToUserId = subscribedToUserId;
-                subscriber.SubscriberUserId = subscriberUserId;
+                var subscriber = new SubscriptionRecord
+                {
+                    SubscribedToUserId = subscribedToUserId,
+                    SubscriberUserId = userId
+                };
                 context.SubscriptionRecords.Add(subscriber);
-                context.SaveChanges();
-                return subscriber;
 
-
-
+                await context.SaveChangesAsync();
             }
         }
 
-        public void DeleteSubscription(int subscribedToUserId, int subscriberUserId)
+        public async Task DeleteSubscription(Guid userId, Guid subscribedToUserId)
         {
             using (var context = new InstaContext())
             {
-                SubscriptionRecord subscriber = context.SubscriptionRecords.FirstOrDefault(
-                   n => n.SubscribedToUserId == subscribedToUserId && n.SubscriberUserId == subscriberUserId);
+                var subscriber = await context.SubscriptionRecords.FirstOrDefaultAsync(
+                                     n => n.SubscribedToUserId == subscribedToUserId && n.SubscriberUserId == userId);
 
                 if (subscriber != null)
                 {
-
                     context.SubscriptionRecords.Remove(subscriber);
-                    context.SaveChanges();
 
-
+                    await context.SaveChangesAsync();
                 }
-                
             }
+        }
 
-        }
-        public SubscriptionRecord [] GetSubscriberUser(int userId)
+        public async Task<UserEntity[]> GetSubscriptions(Guid userId)
         {
             using (var context = new InstaContext())
             {
-                var subscriptions = context.SubscriptionRecords.Where(n => n.SubscriberUserId == userId).ToArray();
-                return subscriptions;
+                var following = await context.SubscriptionRecords.AsNoTracking()
+                                    .Where(x => x.SubscriberUserId == userId)
+                                    .Include(x => x.SubscribedToUser)
+                                    .ThenInclude(x => x.Profile)
+                                    .ToArrayAsync();
+
+                var users = following.Select(x => x.SubscribedToUser.ToEntity()).ToArray();
+                users.ForEach(x => x.CanSubscribe = false);
+
+                return users;
             }
         }
-        public SubscriptionRecord[] GetSubscribedToUser(int userId)
+
+        public async Task<UserEntity[]> GetFollowers(Guid userId)
         {
             using (var context = new InstaContext())
             {
-                var subscriptions = context.SubscriptionRecords.Where(n => n.SubscribedToUserId == userId).ToArray();
-                return subscriptions;
+                var following = await context.SubscriptionRecords.AsNoTracking()
+                                    .Where(x => x.SubscribedToUserId == userId)
+                                    .Include(x => x.SubscriberUser)
+                                    .ThenInclude(x => x.Profile)
+                                    .ToArrayAsync();
+
+                var users = following.Select(x => x.SubscriberUser.ToEntity()).ToArray();
+                users.ForEach(x => x.CanSubscribe = false);
+
+                return users;
+            }
+        }
+
+        public async Task<SocialStats> GetSocialStats(Guid userId)
+        {
+            using (var context = new InstaContext())
+            {
+                var following = await context.SubscriptionRecords.AsNoTracking()
+                                    .CountAsync(x => x.SubscriberUserId == userId);
+
+                var followers = await context.SubscriptionRecords.AsNoTracking()
+                                    .CountAsync(x => x.SubscribedToUserId == userId);
+
+                return new SocialStats
+                {
+                    Followers = followers,
+                    Following = following
+                };
+            }
+        }
+
+        public async Task<bool> IsFollowing(Guid userId, Guid otherUserId)
+        {
+            using (var context = new InstaContext())
+            {
+                return await context.SubscriptionRecords.AnyAsync(x => x.SubscriberUserId == userId &&
+                                                                       x.SubscribedToUserId == otherUserId);
             }
         }
     }
 }
-

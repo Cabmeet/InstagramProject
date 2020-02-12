@@ -1,0 +1,27 @@
+﻿@model PostCreateModel
+@{
+    ViewBag.Title = "Add Post";
+    Layout = "_Layout";
+}
+
+<form asp-controller="Posts" method="post" asp-action="add" enctype="multipart/form-data">
+    <div class="container-fluid">
+        <div class="row">
+            <textarea name="content" rows="20" class="form-control" placeholder="Write something here..." required="required" style="margin-bottom: 1em"></textarea>
+        </div>
+        <div class="row">
+            <input type="file" name="images" multiple="multiple" accept="image/*"/>
+        </div>
+        <div class="row justify-content-end">
+            <input name="tags" class="form-control" type="text" placeholder="Add comma-separated tags" style="max-width: 480px;" />
+        </div>
+        <br />
+        <div class="row justify-content-end">
+            <input name="location" class="form-control" type="text" placeholder="Location" style="max-width: 240px;" />
+        </div>
+        <br />
+        <div class="row justify-content-end">
+            <button type="submit" class="btn btn-outline-dark">Create</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,33 @@
+﻿@model Insta.BusinessLogic.Entities.Container<Insta.BusinessLogic.Entities.PostEntity>
+
+@{
+    ViewBag.Title = "My Feed";
+    Layout = "_Layout";
+}
+<h1>My feed</h1>
+
+<div class="row">
+    @foreach (var post in Model.Entities)
+    {
+        <partial name="_PostPartial" model="@post" />
+    }
+</div>
+
+@{
+    var totalPages = (int)Math.Ceiling(Model.TotalEntities / 9.0);
+
+    if (totalPages > 1)
+    {
+        <nav aria-label="pagination">
+            <ul class="pagination justify-content-center">
+                @for (var i = 1; i <= totalPages; i++)
+                {
+                    var isActive = i - 1 == Model.Page ? "active" : string.Empty;
+                    <li class="page-item @isActive">
+                        <a class="page-link" href="@Url.Action("Feed", "Posts", new { page = i - 1 })">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

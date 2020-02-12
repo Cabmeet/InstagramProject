@@ -21,5 +21,11 @@ namespace Insta.BusinessLogic.Entities
         public string LastName { get; set; }
 
         public string UserName { get; set; }
+
+        public bool IsVisible { get; set; }
+
+        public bool CanSubscribe { get; set; }
+
+        public string ProfileImageCloudUrl { get; set; }
     }
 }

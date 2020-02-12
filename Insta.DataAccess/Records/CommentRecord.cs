@@ -1,10 +1,10 @@
-﻿namespace Insta.DataAccess.Records
-{
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
+namespace Insta.DataAccess.Records
+{
     [Table("Comments")]
     public sealed class CommentRecord
     {
@@ -32,6 +32,6 @@
         public UserRecord User { get; set; }
 
         [ForeignKey("User")]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 }
